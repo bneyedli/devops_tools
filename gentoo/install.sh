@@ -17,6 +17,7 @@ die () {
 
 for file in *.sh
 do
+  [[ ${file} == install.sh ]] && continue
   cp ${file} ${INSTALL_DIR}/$(${BASE} ${file} .sh)
   [[ ! -x ${INSTALL_DIR}/$(${BASE} ${file} .sh) ]] && ${CHMOD} 755 ${INSTALL_DIR}/$(${BASE} ${file} .sh)
 done

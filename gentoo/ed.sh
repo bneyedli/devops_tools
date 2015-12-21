@@ -10,12 +10,12 @@ declare -i doSudo='0'
 
 declare -r GIT='/usr/bin/git'
 declare -r SUM='/usr/bin/md5sum'
-declare -r SHA='/usr/bin/sha512sum'
 declare -r STAT='/usr/bin/stat'
 declare -r GREP='/bin/egrep'
 declare -r EDITOR='/usr/bin/vim'
 declare -r SUDO='/usr/bin/sudo'
 
+#Need one arg to continue
 if (( ${#@} < 1 ))
 then
   echo "Specify a file to hack on"
@@ -24,6 +24,7 @@ fi
 
 declare TARGET=${1}
 
+#Do not go quietly into that good night
 die () {
   echo "${1}"
   exit "${2}"
@@ -79,13 +80,14 @@ if (( gitCommit == 1 ))
 then
   if [[ -f ./README.md ]]
   then
-    SHASUM=$(${SHA} ${TARGET})
-    egrep "^${TARGET}.*SHA:" README.md &> /dev/null
+    MD5SUM=$(${SUM} ${TARGET})
+    (( $? == 0 )) || die "Could not ${SUM} ${TARGET}" 1
+    egrep "^${TARGET}.*MD5:" README.md &> /dev/null
     if (( $? == 0 ))
     then
-      sed -i "s/\(^${TARGET}.*SHA:\).*$/\1${SHASUM}/" README.md
+      sed -i "s/\(^${TARGET}.*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
     else
-      sed -i "s/\(^${TARGET}.*$\)/\1 \| SHA: ${SHASUM}/" README.md
+      sed -i "s/\(^${TARGET}.*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
     fi
     ${GIT} add ./README.md
   fi

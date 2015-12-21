@@ -8,6 +8,7 @@ then
   exit 1
 fi
 
+#Check if portage is mounted
 ( mount|grep /var/tmp/portage/ )
 if (( $? > 0 )) 
 then

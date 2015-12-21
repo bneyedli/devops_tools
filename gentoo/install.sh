@@ -14,6 +14,8 @@ die () {
 
 #Should probably do something smarter than this
 [[ -f ./install.sh ]] || die "Please run from the same directory as project files" '1'
+
+#Run as root!
 (( UID == 0 )) || die "Please run as root" '1'
 
 for file in *.sh

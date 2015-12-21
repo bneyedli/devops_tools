@@ -1,6 +1,7 @@
 #!/bin/bash
 PORTAGE_TMP=/var/tmp/portage/
 
+#Need 1 arg
 if (( ${#@} < 1 ))
 then
   echo "Specify a package to merge"

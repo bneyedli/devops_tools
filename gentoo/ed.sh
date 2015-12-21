@@ -80,7 +80,7 @@ if (( gitCommit == 1 ))
 then
   if [[ -f ./README.md ]]
   then
-    MD5SUM=$(${SUM} ${TARGET})
+    MD5SUM=$(${SUM} ${TARGET}|awk '{ print $1 }')
     (( $? == 0 )) || die "Could not ${SUM} ${TARGET}" 1
     egrep "^${TARGET}.*MD5:" README.md &> /dev/null
     if (( $? == 0 ))

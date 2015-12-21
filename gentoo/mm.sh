@@ -17,7 +17,7 @@ fi
 sudo /usr/bin/emerge $1 &> emerge.out  &
 EMERGE_PID=$!
 
-echo "Forked..."
+PRINT_STRING="Forked..."
 
 while (( $? == 0 ))
 do 

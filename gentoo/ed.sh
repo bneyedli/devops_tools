@@ -6,11 +6,14 @@ declare -i gitPush='0'
 declare -i gitPull='0'
 declare -i gitCommit='0'
 
+declare -i doSudo='0'
+
 declare -r GIT='/usr/bin/git'
 declare -r SUM='/usr/bin/md5sum'
 declare -r STAT='/usr/bin/stat'
 declare -r GREP='/bin/egrep'
 declare -r EDITOR='/usr/bin/vim'
+declare -r SUDO='/usr/bin/sudo'
 
 if (( ${#@} < 1 ))
 then
@@ -56,8 +59,16 @@ then
   die "${retMsg}" "${retVal}"
 fi
 
+[[ -f ${TARGET} ]] || die "No such file" '1'
+[[ -w ${TARGET} ]] || doSudo='1'
+
 targetMtimePre=$(${STAT} ${TARGET} | ${GREP} ^Modify | ${SUM})
-${EDITOR} ${TARGET}
+if (( doSudo == 1 ))
+then
+  ${SUDO} ${EDITOR} ${TARGET}
+else
+  ${EDITOR} ${TARGET}
+fi
 targetMtimePost=$(${STAT} ${TARGET} | ${GREP} ^Modify| ${SUM})
 
 [[ ! ${targetMtimePre} == ${targetMtimePost} ]] && gitCommit=1

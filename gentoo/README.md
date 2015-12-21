@@ -1,7 +1,8 @@
 # Gentooling
-Script | Name | Description
------- | ---- | -----------
+Script | Name | Description | Checksums
+------ | ---- | ----------- | ---------
 mm.sh | Merge Master | emerge half thought wrapper, mount & unmount tmpfs, use genlop
 ed.sh | Git Wrapper | edit file, commit if changed, push if needful
 install.sh | Crappy Installer | Install these here files.
+https://github.com/ccon-io/devops_tools/blob/master/gentoo/install.sh
 

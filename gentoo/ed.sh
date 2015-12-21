@@ -29,6 +29,7 @@ die () {
   exit "${2}"
 }
 
+#Check status of current repo
 gitStatus () {
   gitPush=0
   gitPull=0

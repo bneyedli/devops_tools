@@ -10,6 +10,7 @@ declare -i doSudo='0'
 
 declare -r GIT='/usr/bin/git'
 declare -r SUM='/usr/bin/md5sum'
+declare -r SHA='/usr/bin/sha512sum'
 declare -r STAT='/usr/bin/stat'
 declare -r GREP='/bin/egrep'
 declare -r EDITOR='/usr/bin/vim'
@@ -73,7 +74,25 @@ targetMtimePost=$(${STAT} ${TARGET} | ${GREP} ^Modify| ${SUM})
 
 [[ ! ${targetMtimePre} == ${targetMtimePost} ]] && gitCommit=1
 
-(( gitCommit == 1 )) && ${GIT} add ${TARGET} && ${GIT} commit
+if (( gitCommit == 1 ))
+then
+  if [[ -f ./README.md ]]
+  then
+    SHASUM=$(${SHA} ${TARGET})
+    egrep "^${TARGET}.*SHA:" &> /dev/null
+    if (( $? == 0 ))
+    then
+      sed "s/\(^${TARGET}.*SHA:\).*$/\1${SHASUM}/" README.md
+    else
+      sed "s/\(^${TARGET}.*$\)/\1 \| SHA: ${SHASUM}/" README.md
+    fi
+
+    ${GIT} add ./README.md
+  fi
+
+  ${GIT} add ${TARGET}
+  ${GIT} commit
+fi
 
 gitStatus
 if (( retVal > 0 ))

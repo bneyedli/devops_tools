@@ -1,3 +1,4 @@
 # Gentooling
-mm.sh Merge_Master -- emerge half thought wrapper
+mm.sh --- Merge Master -- emerge half thought wrapper, mount & unmount tmpfs, use genlop
+ed.sh --- Git Wrapper -- edit file, commit if changed, push if needful
 

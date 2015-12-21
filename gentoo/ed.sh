@@ -70,5 +70,6 @@ then
   die "${retMsg}" "${retVal}"
 fi
 
-(( gitPush == 1 )) && ${GIT} push
-(( gitPull == 1 )) && ${GIT} pull
+(( gitPush == 1 )) && ${GIT} push && die "Changes pushed" "0"
+(( gitPull == 1 )) && ${GIT} pull && die "Changes pulled" "0"
+die "Nothing eh?" "0"

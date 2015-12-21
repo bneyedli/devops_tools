@@ -79,14 +79,13 @@ then
   if [[ -f ./README.md ]]
   then
     SHASUM=$(${SHA} ${TARGET})
-    egrep "^${TARGET}.*SHA:" &> /dev/null
+    egrep "^${TARGET}.*SHA:" README.md &> /dev/null
     if (( $? == 0 ))
     then
       sed "s/\(^${TARGET}.*SHA:\).*$/\1${SHASUM}/" README.md
     else
       sed "s/\(^${TARGET}.*$\)/\1 \| SHA: ${SHASUM}/" README.md
     fi
-
     ${GIT} add ./README.md
   fi
 

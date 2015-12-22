@@ -30,28 +30,41 @@ die () {
   exit "${2}"
 }
 
-#Check status of current repo
-gitStatus () {
-  gitPush=0
-  gitPull=0
-  LOCAL=$(${GIT} rev-parse @)
-  REMOTE=$(${GIT} rev-parse @{u})
-  BASE=$(${GIT} merge-base @ @{u})
-  if [ $LOCAL = $REMOTE ]; then
-    retMsg="Up-to-date"
-    return 0
-  elif [ $LOCAL = $BASE ]; then
-    retMsg="Pull Required"
-    gitPull=1
-    return 0
-  elif [ $REMOTE = $BASE ]; then
-    retMsg="Push Required"
-    gitPush=1
-    return 0
-  else
-    retMsg="Divergent"
-    return 1
-  fi
+runGit () {
+  case $1 in
+    push)
+      ${GIT} push || die "Could not push to git" '1'
+    ;;
+    pull)
+      ${GIT} push || die "Could not pull from git" '1'
+    ;;
+    add)
+      ${GIT} add ${2} || die "Could not git add ${2}" '1'
+    ;;
+    commit)
+    ;;
+    status)
+    #Check status of current repo -- thanks internet guy!
+    gitPush=0
+    gitPull=0
+    LOCAL=$(${GIT} rev-parse @)
+    REMOTE=$(${GIT} rev-parse @{u})
+    BASE=$(${GIT} merge-base @ @{u})
+    if [ $LOCAL = $REMOTE ]; then
+      retMsg="Up-to-date"
+      return 0
+    elif [ $LOCAL = $BASE ]; then
+      retMsg="Pull Required"
+      gitPull=1
+      return 0
+    elif [ $REMOTE = $BASE ]; then
+      retMsg="Push Required"
+      gitPush=1
+      return 0
+    else
+      retMsg="Divergent"
+      return 1
+    fi
 }
 
 gitStatus
@@ -64,6 +77,9 @@ fi
 
 [[ -f ${TARGET} ]] || die "No such file" '1'
 [[ -w ${TARGET} ]] || doSudo='1'
+
+(( gitPush == 0 )) && runGit 'push'
+(( gitPull == 0 )) && runGit 'pull'
 
 targetMtimePre=$(${STAT} ${TARGET} | ${GREP} ^Modify | ${SUM})
 if (( doSudo == 1 ))
@@ -82,18 +98,18 @@ then
   then
     MD5SUM=$(${SUM} ${TARGET}|awk '{ print $1 }')
     (( $? == 0 )) || die "Could not ${SUM} ${TARGET}" 1
-    egrep "^${TARGET}.*MD5:" README.md &> /dev/null
+    egrep "^${TARGET}.*MD5" README.md &> /dev/null
     if (( $? == 0 ))
     then
       sed -i "s/\(^${TARGET}.*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
     else
       sed -i "s/\(^${TARGET}.*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
     fi
-    ${GIT} add ./README.md
+    runGit 'add' 'README.md'
   fi
 
-  ${GIT} add ${TARGET}
-  ${GIT} commit
+  runGit 'add' "${TARGET}"
+  runGit 'commit'
 fi
 
 gitStatus
@@ -102,6 +118,6 @@ then
   die "${retMsg}" "${retVal}"
 fi
 
-(( gitPush == 1 )) && ${GIT} push && die "Changes pushed" "0"
-(( gitPull == 1 )) && ${GIT} pull && die "Changes pulled" "0"
+(( gitPush == 1 )) && runGit push && die "Changes pushed" "0"
+(( gitPull == 1 )) && runGit pull && die "Changes pulled" "0"
 die "Nothing eh?" "0"

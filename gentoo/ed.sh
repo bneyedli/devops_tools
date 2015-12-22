@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 set -u -o pipefail
 
@@ -45,7 +45,7 @@ runGit () {
       gitOut=$( ${GIT} add ${2} 2>&1 ) || die "Could not git add ${2}: ${gitOut}" '1'
     ;;
     commit)
-      gitOut=$( ${GIT} commit 2>&1 ) || die "Could not commit"
+      gitOut=$( ${GIT} commit -m "${2}" 2>&1 ) || die "Could not commit: ${gitOut}" '1'
     ;;
     status)
       #Check status of current repo -- thanks internet guy!
@@ -84,8 +84,8 @@ fi
 [[ -f ${TARGET} ]] || die "No such file" '1'
 [[ -w ${TARGET} ]] || doSudo='1'
 
-(( gitPush == 0 )) && runGit 'push'
-(( gitPull == 0 )) && runGit 'pull'
+(( gitPush == 1 )) && runGit 'push'
+(( gitPull == 1 )) && runGit 'pull'
 
 targetMtimePre=$(${STAT} ${TARGET} | ${GREP} ^Modify | ${SUM})
 if (( doSudo == 1 ))
@@ -117,7 +117,8 @@ then
   fi
 
   runGit 'add' "${TARGET}"
-  runGit 'commit'
+  read commitMessage
+  runGit 'commit' "${commitMessage}"
 fi
 
 runGit status

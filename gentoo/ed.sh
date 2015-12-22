@@ -134,6 +134,8 @@ then
   echo -n "Commit message -> "
   read commitMessage
 
+  [[ -z ${commitMessage} ]] && die "Commit aborted due to empty message" '1'
+
   #[[ ${commitMessage} =~ [a-zA-Z0-9\&,.-].* ]] || die "Weirdo characters: ${commitMessage}, try again" '1'
 
   #Commit the things

@@ -18,11 +18,13 @@ declare -r SUDO='/usr/bin/sudo'
 declare -r BASENAME='/usr/bin/basename'
 declare -r DIRNAME='/usr/bin/dirname'
 
+declare -r CUR_DIR=$( pwd )
+
 #Do not go quietly into that good night
 die () {
   echo "${1}"
   exit "${2}"
-  cd -
+  cd ${CUR_DIR}
 }
 
 #Need one arg to continue
@@ -83,6 +85,11 @@ then
   die "${retMsg}" "${retVal}"
 fi
 
+WORK_DIR=$( ${DIRNAME} ${TARGET} )
+TARGET=$( ${BASENAME} ${TARGET} )
+
+cd ${WORK_DIR}
+
 [[ -f ${TARGET} ]] || die "No such file" '1'
 [[ -w ${TARGET} ]] || doSudo='1'
 
@@ -103,7 +110,6 @@ targetMtimePost=$(${STAT} ${TARGET} | ${GREP} ^Modify| ${SUM})
 #If we will be commiting, do thus
 if (( gitCommit == 1 ))
 then
-  cd $( ${DIRNAME} ${TARGET} )
   if [[ -f ./README.md ]]
   then
     MD5SUM=$(${SUM} ${TARGET} | ${AWK} '{ print $1 }')

@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -u -o pipefail
+
 PORTAGE_TMP=/var/tmp/portage/
 
 #Need 1 arg

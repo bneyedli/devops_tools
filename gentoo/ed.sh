@@ -122,7 +122,8 @@ then
   echo -n "Commit message -> "
   read commitMessage
 
-  [[ ${commitMessage} =~ [a-zA-Z0-9&,-_].* ]] || die "Weirdo characters: ${commitMessage}, try again" '1'
+  #Derp
+  [[ ${commitMessage} =~ [a-zA-Z0-9\&,.-].* ]] || die "Weirdo characters: ${commitMessage}, try again" '1'
 
   #Commit the things
   runGit 'commit' "${commitMessage}"

@@ -44,27 +44,28 @@ runGit () {
     commit)
     ;;
     status)
-    #Check status of current repo -- thanks internet guy!
-    gitPush=0
-    gitPull=0
-    LOCAL=$(${GIT} rev-parse @)
-    REMOTE=$(${GIT} rev-parse @{u})
-    BASE=$(${GIT} merge-base @ @{u})
-    if [ $LOCAL = $REMOTE ]; then
-      retMsg="Up-to-date"
-      return 0
-    elif [ $LOCAL = $BASE ]; then
-      retMsg="Pull Required"
-      gitPull=1
-      return 0
-    elif [ $REMOTE = $BASE ]; then
-      retMsg="Push Required"
-      gitPush=1
-      return 0
-    else
-      retMsg="Divergent"
-      return 1
-    fi
+      #Check status of current repo -- thanks internet guy!
+      gitPush=0
+      gitPull=0
+      LOCAL=$(${GIT} rev-parse @)
+      REMOTE=$(${GIT} rev-parse @{u})
+      BASE=$(${GIT} merge-base @ @{u})
+      if [ $LOCAL = $REMOTE ]; then
+        retMsg="Up-to-date"
+        return 0
+      elif [ $LOCAL = $BASE ]; then
+        retMsg="Pull Required"
+        gitPull=1
+        return 0
+      elif [ $REMOTE = $BASE ]; then
+        retMsg="Push Required"
+        gitPush=1
+        return 0
+      else
+        retMsg="Divergent"
+        return 1
+      fi
+    ::
 }
 
 gitStatus

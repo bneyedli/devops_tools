@@ -109,6 +109,7 @@ then
 else
   ${EDITOR} ${TARGET}
 fi
+wait
 targetMtimePost=$(${STAT} ${TARGET} | ${GREP} ^Modify| ${SUM})
 
 [[ ! ${targetMtimePre} == ${targetMtimePost} ]] && gitCommit=1

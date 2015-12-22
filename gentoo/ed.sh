@@ -20,6 +20,9 @@ declare -r DIRNAME='/usr/bin/dirname'
 
 declare -r CUR_DIR=$( pwd )
 
+declare SED='/bin/sed'
+
+
 #Do not go quietly into that good night
 die () {
   echo "${1}"
@@ -105,6 +108,7 @@ fi
 targetMtimePre=$(${STAT} ${TARGET} | ${GREP} ^Modify | ${SUM})
 if (( doSudo == 1 ))
 then
+  SED="${SUDO} ${SED}"
   ${SUDO} ${EDITOR} ${TARGET}
 else
   ${EDITOR} ${TARGET}
@@ -126,9 +130,9 @@ then
     egrep "^${TARGET}.*MD5" README.md &> /dev/null
     if (( $? == 0 ))
     then
-      sed -i "s/\(^$(${BASENAME} ${TARGET}).*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
+      ${SED} -i "s/\(^$(${BASENAME} ${TARGET}).*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
     else
-      sed -i "s/\(^$(${BASENAME} ${TARGET}).*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
+      ${SED} -i "s/\(^$(${BASENAME} ${TARGET}).*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
     fi
     runGit 'add' 'README.md'
   fi

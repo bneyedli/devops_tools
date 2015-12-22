@@ -36,16 +36,16 @@ fi
 runGit () {
   case $1 in
     push)
-      ${GIT} push || die "Could not push to git" '1'
+      gitOut=$( ${GIT} push 2>&1 ) || die "Could not push to git: ${gitOut}" '1'
     ;;
     pull)
-      ${GIT} push || die "Could not pull from git" '1'
+      gitOut=$( ${GIT} pull 2>&1 ) || die "Could not pull from git: ${gitOut}" '1'
     ;;
     add)
-      ${GIT} add ${2} || die "Could not git add ${2}" '1'
+      gitOut=$( ${GIT} add ${2} 2>&1 ) || die "Could not git add ${2}: ${gitOut}" '1'
     ;;
     commit)
-      ${GIT} commit || die "Could not commit"
+      gitOut=$( ${GIT} commit 2>&1 ) || die "Could not commit"
     ;;
     status)
       #Check status of current repo -- thanks internet guy!

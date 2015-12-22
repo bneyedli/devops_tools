@@ -104,7 +104,7 @@ then
   if [[ -f ./README.md ]]
   then
     MD5SUM=$(${SUM} ${TARGET} | ${AWK} '{ print $1 }')
-    (( $? == 0 )) || die "Could not ${SUM} ${TARGET}" 1
+    (( $? == 0 )) || die "Could not ${SUM} ${TARGET}" '1'
 
     #Check for existing md5sum
     egrep "^${TARGET}.*MD5" README.md &> /dev/null
@@ -120,7 +120,8 @@ then
   runGit 'add' "${TARGET}"
   echo -n "Commit message -> "
   read commitMessage
-  [[ ${commitMessage} == [a-zA-Z0-9].* ]] || die "Weirdo characters: "${commitMessage}", try again" '1'
+  [[ ${commitMessage} =~ [a-zA-Z0-9].* ]] || die "Weirdo characters: ${commitMessage}, try again" '1'
+
   runGit 'commit' "${commitMessage}"
 fi
 
@@ -132,4 +133,5 @@ fi
 
 (( gitPush == 1 )) && runGit push && die "Changes pushed" "0"
 (( gitPull == 1 )) && runGit pull && die "Changes pulled" "0"
+
 die "Nothing eh?" "0"

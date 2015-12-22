@@ -118,10 +118,13 @@ then
   fi
 
   runGit 'add' "${TARGET}"
+
   echo -n "Commit message -> "
   read commitMessage
+
   [[ ${commitMessage} =~ [a-zA-Z0-9].* ]] || die "Weirdo characters: ${commitMessage}, try again" '1'
 
+  #Commit the things
   runGit 'commit' "${commitMessage}"
 fi
 

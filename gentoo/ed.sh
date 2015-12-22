@@ -14,6 +14,7 @@ declare -r STAT='/usr/bin/stat'
 declare -r GREP='/bin/egrep'
 declare -r EDITOR='/usr/bin/vim'
 declare -r SUDO='/usr/bin/sudo'
+declare -r BASE='/usr/bin/basename'
 
 #Do not go quietly into that good night
 die () {
@@ -107,9 +108,9 @@ then
     egrep "^${TARGET}.*MD5" README.md &> /dev/null
     if (( $? == 0 ))
     then
-      sed -i "s/\(^$(basename ${TARGET}).*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
+      sed -i "s/\(^$(${BASE} ${TARGET}).*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
     else
-      sed -i "s/\(^$(basename ${TARGET}).*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
+      sed -i "s/\(^$(${BASE} ${TARGET}).*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
     fi
     runGit 'add' 'README.md'
   fi

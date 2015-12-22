@@ -27,8 +27,6 @@ die () {
   cd ${CUR_DIR}
 }
 
-
-
 #wrapping git functions
 runGit () {
   case $1 in
@@ -91,7 +89,8 @@ then
   die "${retMsg}" "${retVal}"
 fi
 
-
+(( gitPush == 1 )) && runGit push && die "Changes pushed" "0"
+(( gitPull == 1 )) && runGit pull && die "Changes pulled" "0"
 
 [[ -f ${TARGET} ]] || die "No such file" '1'
 [[ -w ${TARGET} ]] || doSudo='1'
@@ -135,8 +134,6 @@ then
   read commitMessage
 
   [[ -z ${commitMessage} ]] && die "Commit aborted due to empty message" '1'
-
-  #[[ ${commitMessage} =~ [a-zA-Z0-9\&,.-].* ]] || die "Weirdo characters: ${commitMessage}, try again" '1'
 
   #Commit the things
   runGit 'commit' "${commitMessage}"

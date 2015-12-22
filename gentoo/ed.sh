@@ -10,11 +10,12 @@ declare -i doSudo='0'
 
 declare -r GIT='/usr/bin/git'
 declare -r SUM='/usr/bin/md5sum'
+declare -r AWK='/usr/bin/awk'
 declare -r STAT='/usr/bin/stat'
 declare -r GREP='/bin/egrep'
 declare -r EDITOR='/usr/bin/vim'
 declare -r SUDO='/usr/bin/sudo'
-declare -r BASE='/usr/bin/basename'
+declare -r BASENAME='/usr/bin/basename'
 
 #Do not go quietly into that good night
 die () {
@@ -101,16 +102,16 @@ if (( gitCommit == 1 ))
 then
   if [[ -f ./README.md ]]
   then
-    MD5SUM=$(${SUM} ${TARGET}|awk '{ print $1 }')
+    MD5SUM=$(${SUM} ${TARGET} | ${AWK} '{ print $1 }')
     (( $? == 0 )) || die "Could not ${SUM} ${TARGET}" 1
 
     #Check for existing md5sum
     egrep "^${TARGET}.*MD5" README.md &> /dev/null
     if (( $? == 0 ))
     then
-      sed -i "s/\(^$(${BASE} ${TARGET}).*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
+      sed -i "s/\(^$(${BASENAME} ${TARGET}).*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
     else
-      sed -i "s/\(^$(${BASE} ${TARGET}).*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
+      sed -i "s/\(^$(${BASENAME} ${TARGET}).*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
     fi
     runGit 'add' 'README.md'
   fi

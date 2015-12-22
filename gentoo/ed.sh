@@ -16,11 +16,13 @@ declare -r GREP='/bin/egrep'
 declare -r EDITOR='/usr/bin/vim'
 declare -r SUDO='/usr/bin/sudo'
 declare -r BASENAME='/usr/bin/basename'
+declare -r DIRNAME='/usr/bin/dirname'
 
 #Do not go quietly into that good night
 die () {
   echo "${1}"
   exit "${2}"
+  cd -
 }
 
 #Need one arg to continue
@@ -101,6 +103,7 @@ targetMtimePost=$(${STAT} ${TARGET} | ${GREP} ^Modify| ${SUM})
 #If we will be commiting, do thus
 if (( gitCommit == 1 ))
 then
+  cd $( ${DIRNAME} ${TARGET} )
   if [[ -f ./README.md ]]
   then
     MD5SUM=$(${SUM} ${TARGET} | ${AWK} '{ print $1 }')
@@ -122,7 +125,7 @@ then
   echo -n "Commit message -> "
   read commitMessage
 
-  [[ ${commitMessage} =~ [a-zA-Z0-9\&,.-].* ]] || die "Weirdo characters: ${commitMessage}, try again" '1'
+  #[[ ${commitMessage} =~ [a-zA-Z0-9\&,.-].* ]] || die "Weirdo characters: ${commitMessage}, try again" '1'
 
   #Commit the things
   runGit 'commit' "${commitMessage}"

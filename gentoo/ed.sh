@@ -98,6 +98,7 @@ targetMtimePost=$(${STAT} ${TARGET} | ${GREP} ^Modify| ${SUM})
 
 [[ ! ${targetMtimePre} == ${targetMtimePost} ]] && gitCommit=1
 
+#If we will be commiting, do thus
 if (( gitCommit == 1 ))
 then
   if [[ -f ./README.md ]]

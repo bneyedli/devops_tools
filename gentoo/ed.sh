@@ -77,7 +77,12 @@ runGit () {
   esac
 }
 
+WORK_DIR=$( ${DIRNAME} ${TARGET} )
+TARGET=$( ${BASENAME} ${TARGET} )
+
+cd ${WORK_DIR}
 runGit status
+
 retVal=$?
 
 if (( retVal > 0 ))
@@ -85,10 +90,7 @@ then
   die "${retMsg}" "${retVal}"
 fi
 
-WORK_DIR=$( ${DIRNAME} ${TARGET} )
-TARGET=$( ${BASENAME} ${TARGET} )
 
-cd ${WORK_DIR}
 
 [[ -f ${TARGET} ]] || die "No such file" '1'
 [[ -w ${TARGET} ]] || doSudo='1'

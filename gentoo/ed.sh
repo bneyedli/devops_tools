@@ -15,21 +15,22 @@ declare -r GREP='/bin/egrep'
 declare -r EDITOR='/usr/bin/vim'
 declare -r SUDO='/usr/bin/sudo'
 
-#Need one arg to continue
-if (( ${#@} < 1 ))
-then
-  echo "Specify a file to hack on"
-  exit 1
-fi
-
-declare TARGET=${1}
-
 #Do not go quietly into that good night
 die () {
   echo "${1}"
   exit "${2}"
 }
 
+#Need one arg to continue
+if (( ${#@} < 1 ))
+then
+  echo "Specify a file to hack on"
+  exit 1
+else
+  declare TARGET=${1}
+fi
+
+#wrapping git functions
 runGit () {
   case $1 in
     push)
@@ -42,6 +43,7 @@ runGit () {
       ${GIT} add ${2} || die "Could not git add ${2}" '1'
     ;;
     commit)
+      ${GIT} commit || die "Could not commit"
     ;;
     status)
       #Check status of current repo -- thanks internet guy!
@@ -65,10 +67,11 @@ runGit () {
         retMsg="Divergent"
         return 1
       fi
-    ::
+    ;; 
+  esac
 }
 
-gitStatus
+runGit status
 retVal=$?
 
 if (( retVal > 0 ))
@@ -99,12 +102,14 @@ then
   then
     MD5SUM=$(${SUM} ${TARGET}|awk '{ print $1 }')
     (( $? == 0 )) || die "Could not ${SUM} ${TARGET}" 1
+
+    #Check for existing md5sum
     egrep "^${TARGET}.*MD5" README.md &> /dev/null
     if (( $? == 0 ))
     then
-      sed -i "s/\(^${TARGET}.*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
+      sed -i "s/\(^$(basename ${TARGET}).*MD5:\).*$/\1 ${MD5SUM}/" README.md || die "Could not replace MD5" '1'
     else
-      sed -i "s/\(^${TARGET}.*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
+      sed -i "s/\(^$(basename ${TARGET}).*$\)/\1 \| MD5: ${MD5SUM}/" README.md || die "Could not append MD5: ${MD5SUM}" '1'
     fi
     runGit 'add' 'README.md'
   fi
@@ -113,7 +118,7 @@ then
   runGit 'commit'
 fi
 
-gitStatus
+runGit status
 if (( retVal > 0 ))
 then
   die "${retMsg}" "${retVal}"

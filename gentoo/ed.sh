@@ -31,18 +31,22 @@ die () {
 runGit () {
   case $1 in
     push)
+      echo "Pushing to git."
       gitOut=$( ${GIT} push 2>&1 ) || die "Could not push to git: ${gitOut}" '1'
     ;;
     pull)
+      echo "Pulling from git."
       gitOut=$( ${GIT} pull 2>&1 ) || die "Could not pull from git: ${gitOut}" '1'
     ;;
     add)
+      echo "Adding file: $2"
       gitOut=$( ${GIT} add ${2} 2>&1 ) || die "Could not git add ${2}: ${gitOut}" '1'
     ;;
     commit)
       gitOut=$( ${GIT} commit -m "${2}" 2>&1 ) || die "Could not commit: ${gitOut}" '1'
     ;;
     status)
+      echo "Checking git status."
       #Check status of current repo -- thanks internet guy!
       gitPush=0
       gitPull=0

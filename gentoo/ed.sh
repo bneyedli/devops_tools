@@ -27,14 +27,7 @@ die () {
   cd ${CUR_DIR}
 }
 
-#Need one arg to continue
-if (( ${#@} < 1 ))
-then
-  echo "Specify a file to hack on"
-  exit 1
-else
-  declare TARGET=${1}
-fi
+
 
 #wrapping git functions
 runGit () {
@@ -77,12 +70,20 @@ runGit () {
   esac
 }
 
+#Need one arg to continue
+if (( ${#@} < 1 ))
+then
+  echo "Specify a file to hack on"
+  exit 1
+else
+  declare TARGET=${1}
+fi
+
 WORK_DIR=$( ${DIRNAME} ${TARGET} )
 TARGET=$( ${BASENAME} ${TARGET} )
-
 cd ${WORK_DIR}
-runGit status
 
+runGit status
 retVal=$?
 
 if (( retVal > 0 ))

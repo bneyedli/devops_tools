@@ -3,6 +3,7 @@
 set -u -o pipefail
 
 PORTAGE_TMP=/var/tmp/portage/
+ARGS=""
 
 #Need 1 arg
 if (( ${#@} < 1 ))

@@ -9,6 +9,14 @@ if (( ${#@} < 1 ))
 then
   echo "Specify a package to merge"
   exit 1
+elif [[ ${1} =~ ^- ]]
+then
+  echo "Params supplied: $1"
+  (( ${#@} < 2 )) && echo "Please specify a package" && exit 1
+  PACKAGE=$2
+  ARGS=$1
+else
+  PACKAGE=$1
 fi
 
 #Check if portage is mounted
@@ -19,7 +27,13 @@ then
   sudo /bin/mount /var/tmp/portage/ || exit 1
 fi
 
-sudo /usr/bin/emerge $1 &> emerge.out  &
+if [[ -z ${ARGS} ]]
+then
+  sudo /usr/bin/emerge ${PACKAGE} &> emerge.out  &
+else
+  sudo /usr/bin/emerge ${ARGS} ${PACKAGE} &> emerge.out  &
+fi
+
 EMERGE_PID=$!
 
 PRINT_STRING="Forked..."

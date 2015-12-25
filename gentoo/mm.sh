@@ -3,6 +3,7 @@
 set -u -o pipefail
 
 PORTAGE_TMP=/var/tmp/portage/
+PRETEND=0
 ARGS=""
 
 #Need 1 arg
@@ -16,7 +17,7 @@ then
   (( ${#@} < 2 )) && echo "Please specify a package" && exit 1
   PACKAGE=$2
   ARGS=$1
-  [[ ${ARGS} =~ "p" ]] && echo "I don't play pretend" && exit
+  [[ ${ARGS} =~ "p" ]] && PRETEND=1
 else
   PACKAGE=$1
 fi
@@ -25,13 +26,18 @@ fi
 ( mount|grep /var/tmp/portage/ )
 if (( $? > 0 )) 
 then
-  echo "Mounting portage tmpfs"
-  sudo /bin/mount /var/tmp/portage/ || exit 1
+  if (( PRETEND == 0 ))
+  then
+    echo "Mounting portage tmpfs"
+    sudo /bin/mount /var/tmp/portage/ || exit 1
+  fi
 fi
 
-( script -q -c' eix -s dev' &> /dev/null )
-
-if [[ -z ${ARGS} ]]
+if (( PRETEND == 1 ))
+then
+  sudo /usr/bin/emerge ${ARGS} ${PACKAGE}
+  exit 0
+elif [[ -z ${ARGS} ]]
 then
   ( script -q -c "sudo /usr/bin/emerge ${PACKAGE}" &> /dev/null ) &
 else

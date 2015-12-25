@@ -16,6 +16,7 @@ then
   (( ${#@} < 2 )) && echo "Please specify a package" && exit 1
   PACKAGE=$2
   ARGS=$1
+  [[ ${ARGS} =~ "p" ]] && echo "I don't play pretend" && exit
 else
   PACKAGE=$1
 fi
@@ -28,11 +29,13 @@ then
   sudo /bin/mount /var/tmp/portage/ || exit 1
 fi
 
+( script -q -c' eix -s dev' &> /dev/null )
+
 if [[ -z ${ARGS} ]]
 then
-  sudo /usr/bin/emerge ${PACKAGE} &> emerge.out  &
+  ( script -q -c "sudo /usr/bin/emerge ${PACKAGE}" &> /dev/null ) &
 else
-  sudo /usr/bin/emerge ${ARGS} ${PACKAGE} &> emerge.out  &
+  ( script -q -c "sudo /usr/bin/emerge ${ARGS} ${PACKAGE}" &> /dev/null ) &
 fi
 
 EMERGE_PID=$!
@@ -52,7 +55,7 @@ done
 wait ${EMERGE_PID}
 EMERGE_STATUS=$?
 
-cat emerge.out
+cat typescript
 
 if (( ! EMERGE_STATUS  == 0 )) 
 then

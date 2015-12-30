@@ -5,12 +5,14 @@ set -u -o pipefail
 PORTAGE_TMP=/var/tmp/portage/
 PRETEND=0
 SCRIPT_OUT=$(mktemp)
+SCRIPT_ERR=$(mktemp)
 SCRIPT_FLAGS="-a ${SCRIPT_OUT} -q -c"
 ARGS=""
 
 die () {
   echo "$1"
   [[ -f ${SCRIPT_OUT} ]] && rm ${SCRIPT_OUT}
+  [[ -f ${SCRIPT_ERR} ]] && rm ${SCRIPT_ERR}
   checkMount '/var/tmp/portage/' && sudo /bin/umount /var/tmp/portage/
   exit "$2"
 }
@@ -63,9 +65,9 @@ then
   die 'fin' '0'
 elif [[ -z ${ARGS} ]]
 then
-  ( script ${SCRIPT_FLAGS} "sudo /usr/bin/emerge ${PACKAGE}" &> /dev/null ) &
+  ( script ${SCRIPT_FLAGS} "sudo /usr/bin/emerge ${PACKAGE}" 2> ${SCRIPT_ERR} ) &
 else
-  ( script ${SCRIPT_FLAGS} "sudo /usr/bin/emerge ${ARGS} ${PACKAGE}" &> /dev/null ) &
+  ( script ${SCRIPT_FLAGS} "sudo /usr/bin/emerge ${ARGS} ${PACKAGE}" 2> ${SCRIPT_ERR} ) &
 fi
 
 EMERGE_PID=$!
@@ -74,7 +76,6 @@ PRINT_STRING="Forked..."
 
 while (( $? == 0 ))
 do 
-  echo "Merging..."
   echo "${PRINT_STRING}"
   EMERGE_STAT=$(genlop -c -q -i -t | egrep -v -e '!!!' -e 'see manpage' | sed 's/$/ /'|tr -d '\n')
   [[ -n ${EMERGE_STAT} ]] && PRINT_STRING=${EMERGE_STAT}
@@ -86,6 +87,7 @@ done
 wait ${EMERGE_PID}
 EMERGE_STATUS=$?
 
-cat ${SCRIPT_OUT}
+[[ -f ${SCRIPT_OUT} ]] && cat ${SCRIPT_OUT}
+[[ -f ${SCRIPT_ERR} ]] && cat ${SCRIPT_ERR}
 
 (( ! EMERGE_STATUS  == 0 )) && die "Emerge returned: ${EMERGE_STATUS}" "${EMERGE_STATUS}"

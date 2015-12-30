@@ -20,6 +20,11 @@ checkMount () {
   return "$?"
 }
 
+checkFstab () {
+  cat /etc/fstab | /bin/grep ${1}
+  return "$?"
+}
+
 #Need 1 arg
 if (( ${#@} < 1 ))
 then
@@ -41,8 +46,14 @@ if (( $? > 0 ))
 then
   if (( PRETEND == 0 ))
   then
-    echo "Mounting portage tmpfs"
-    sudo /bin/mount /var/tmp/portage/ || die 'Unable to mount tmpfs' '1'
+    checkFstab /var/tmp/portage/
+    if (( $? == 0 ))
+    then
+      echo "Mounting portage tmpfs"
+      sudo /bin/mount /var/tmp/portage/ || die 'Unable to mount tmpfs' '1'
+    else
+      echo "No tmpfs mount in fstab, not mounting"
+    fi
   fi
 fi
 

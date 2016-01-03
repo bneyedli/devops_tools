@@ -4,6 +4,7 @@ import argparse
 import zmq
 
 context = zmq.Context()
+connections = 0
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ip', '-i', required=True, help='Ip to connect to')
@@ -16,15 +17,11 @@ connIP=args.ip
 connPort=args.port
 connString=args.string
 
-#  Socket to talk to server
-print("Connecting to hello world server…")
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://" +connIP +":" +connPort)
 
-for request in range(1):
-    print("Sending request %s …" % request)
-    socket.send_string(connString)
+print("Connecting...")
+socket.send_string(connString)
 
-    #  Get the reply.
-    message = socket.recv_string()
-    print(message)
+message = socket.recv_string()
+print(message)

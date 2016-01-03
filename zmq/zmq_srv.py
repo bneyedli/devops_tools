@@ -11,13 +11,15 @@ context = zmq.Context()
 socket = context.socket(zmq.REP)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--ip', required=True, help='Ip to listen on')
-parser.add_argument('--string', required=True, help='String to listen for')
+parser.add_argument('--ip', '-i', required=True, help='Ip to listen on')
+parser.add_argument('--string', '-s', required=True, help='String to listen for')
+parser.add_argument('--send', '-ss', required=True, help='String to send')
 
 args = parser.parse_args()
 
 listenIP=args.ip
 listenSTR=args.string
+sendSTR=args.send
 
 socket.bind("tcp://" +listenIP +":0")
 
@@ -34,15 +36,14 @@ for element in conn:
 while connections < 1:
     #  Wait for next request from client
     print("Listening on: " +listenIP +" Port: " +lport +" for string: " +listenSTR)
+    print("Waiting for initiate")
     message = socket.recv_string()
     if message == listenSTR:
         print("Received request: %s" % message)
-        #  Send reply back to client
-        socket.send_string("Welcome son, here are your secrets")
+        socket.send_string(sendSTR)
         connections += 1
     else:
         print("BAD MESSAGE: " +message)
         socket.send_string("BAD MESSAGE")
         connections += 1
-    #  Do some 'work'
     time.sleep(1)

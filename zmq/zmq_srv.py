@@ -12,6 +12,7 @@ socket = context.socket(zmq.REP)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ip', '-i', required=True, help='Ip to listen on')
+parser.add_argument('--file', '-f', required=True, help='File to dump vars to')
 parser.add_argument('--string', '-s', required=True, help='String to listen for')
 parser.add_argument('--send', '-ss', required=True, help='String to send')
 
@@ -20,6 +21,7 @@ args = parser.parse_args()
 listenIP=args.ip
 listenSTR=args.string
 sendSTR=args.send
+tmpFile=args.file
 
 socket.bind("tcp://" +listenIP +":0")
 
@@ -33,9 +35,11 @@ for element in conn:
     lip=laddr.split(':')[0]
     lport=laddr.split(':')[1]
 
+with open(tmpFile, 'w') as f:
+    f.write("Listening on: " +listenIP +" Port: " +lport +" for string: " +listenSTR +"\n")
+f.closed
+
 while connections < 1:
-    #  Wait for next request from client
-    print("Listening on: " +listenIP +" Port: " +lport +" for string: " +listenSTR)
     print("Waiting for initiate")
     message = socket.recv_string()
     if message == listenSTR:

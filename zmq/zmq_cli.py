@@ -20,7 +20,6 @@ connString=args.string
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://" +connIP +":" +connPort)
 
-print("Connecting...")
 socket.send_string(connString)
 
 message = socket.recv_string()

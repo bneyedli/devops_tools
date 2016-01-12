@@ -3,8 +3,9 @@ Tooling For The DevOps
 gentoo/ | gentoo stuff
 
 
-```html
+```html <font color="green"> Some green text </font>
 <font color="green"> Some green text </font>
 
-```css
+```css <span style="color: green"> Some green text </span>
+
 <span style="color: green"> Some green text </span>

@@ -48,7 +48,7 @@ for element in conn:
     lip=laddr.split(':')[0]
     lport=laddr.split(':')[1]
     with open('zmq.args', 'w') as f:
-        f.write("Listening on: " +listenIP +" Port: " +lport +" for string: " +listenSTR +"\n")
+        f.write(listenIP +":" +lport +":" +listenSTR +":" +str(childPid))
     f.closed
 
 os._exit(0)

@@ -56,7 +56,7 @@ die () {
 
 help () {
   log 1 "Usage:"
-  echo -e "\n\t$(basename $0) \t-T { ami | iso | livecd | stage } \t-- Build an AMI for Amazon, bootable iso, livecd image or stage tarball\n\t\t\t-S { 1..4 } \t\t\t\t-- What stage (1-2 for livecd, 1-4 for regular stage)\n\t\t\t-A { amd64 | x86 } \t\t\t-- Architecture we are building on\n\t\t\t-N { myName }  \t\t\t\t-- Name / Unique Identifier of this build\n\t\t\t-P { hardened | soft } \t\t\t-- Base profile for this build\n"
+  echo -e "\n\t$(basename $0) \t-T { ami | iso | livecd | stage } \t-- Build an AMI for Amazon, bootable iso, livecd image or stage tarball\n\t\t\t-S { 1..4 } \t\t\t\t-- What stage (1-2 for livecd, 1-4 for regular stage)\n\t\t\t-A { amd64 | x86 } \t\t\t-- Architecture we are building on\n\t\t\t-K { kernel version } \t\t\t-- Version of kernel to build\n\t\t\t-N { myName }  \t\t\t\t-- Name / Unique Identifier of this build\n\t\t\t-P { hardened | soft } \t\t\t-- Base profile for this build\n"
   echo -e "\tOptional args:\t-a [clear autoresume] -c [clear ccache] -d [debug] -k [enable kerncache] -n [no-multilib] -p [purge] -q [quiet] -s [enable selinux] -v [increment verbosity]"
   echo
 }
@@ -230,10 +230,9 @@ sumCheck () {
 }
 
 sigCheck () {
-  local SCRIPT_SCOPE='1'
+  local SCRIPT_SCOPE='2'
   log '1' "Verifying GPG Signature for: $1"
-  #${GPG} --verify $1 $2
-  ${GPG} --verify ${1} 2>&1
+  ${GPG} --verify ${1} | grep "$2" 2>&1
   retVal=$?
   (( retVal == 0 )) || return "${retVal}"
 }
@@ -419,7 +418,7 @@ prepCatalyst () {
   log '1' "Verifying Stage Files"
   if [[ -f ${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_BZ2} ]]
   then
-    sigCheck "${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_ASC}" | grep 'Good signature from "Gentoo Linux Release Engineering (Automated Weekly Release Key) <releng@gentoo.org>"' &> /dev/null
+    sigCheck "${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_ASC}" 'Good signature from "Gentoo Linux Release Engineering (Automated Weekly Release Key) <releng@gentoo.org>"'
     (( $? == 0 )) || die "Failed to verify signature" "$?"
 
     for file in "${DIST_STAGE3_BZ2}" "${DIST_STAGE3_CONTENTS}"
@@ -430,8 +429,12 @@ prepCatalyst () {
       (( $? == 0 )) || die "Whirlpool checksum failed for: ${file}" "$?"
     done
   fi
-  (( CLEAR_CCACHE == 1 )) && rm -rf ${CATALYST_BUILD_TMP}/${SRC_PATH}/var/ccache/*
-  (( $? == 0 )) || log '2' "Failed to clear ccache"
+
+  if (( CLEAR_CCACHE == 1 ))
+  then
+    rm -rf ${CATALYST_BUILD_TMP}/${SRC_PATH}/var/ccache/*
+    (( $? > 0 )) &&  log '2' "Failed to clear ccache"
+  fi
 
   [[ ${BUILD_TARGET} == "livecd" ]] && [[ ! -f ${CATALYST_BUILD_CACHE}/${BUILD_NAME}/livecd-${DIST_STAGE3_BZ2} ]] && cp ${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_BZ2} ${CATALYST_BUILD_CACHE}/${BUILD_NAME}/livecd-${DIST_STAGE3_BZ2}
 

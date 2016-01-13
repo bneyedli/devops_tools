@@ -232,7 +232,8 @@ sumCheck () {
 sigCheck () {
   local SCRIPT_SCOPE='1'
   log '1' "Verifying GPG Signature for: $1"
-  ${GPG} --verify $1 $2
+  #${GPG} --verify $1 $2
+  ${GPG} --verify ${1} 2>&1
   retVal=$?
   (( retVal == 0 )) || return "${retVal}"
 }
@@ -289,6 +290,7 @@ prepCatalyst () {
   CATALYST_LOG_DIR="$(grep ^port_logdir ${CATALYST_CONFIG}|cut -d\" -f2)"
   CATALYST_SNAPSHOT_CACHE="$(grep ^snapshot_cache ${CATALYST_CONFIG}|cut -d\" -f2)"
   CATALYST_BUILD_CACHE="${CATALYST_BASE_DIR}/builds"
+  CATALYST_BUILD_TMP="${CATALYST_BASE_DIR}/tmp"
   PORTAGE_SNAPSHOT_DATE=$(date +%s -r ${CATALYST_SNAPSHOT_CACHE}/portage-latest.tar.bz2)
   PORTAGE_SNAPSHOT_AGE=$(( TIME_NOW - PORTAGE_SNAPSHOT_DATE ))
   PORTAGE_SNAPSHOT_AGE_MAX='14400'
@@ -417,8 +419,8 @@ prepCatalyst () {
   log '1' "Verifying Stage Files"
   if [[ -f ${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_BZ2} ]]
   then
-    sigCheck "${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_ASC}" "${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_DIGESTS}"
-    (( $? == 0 )) || log '2' "Failed to verify signature"
+    sigCheck "${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_ASC}" | grep 'Good signature from "Gentoo Linux Release Engineering (Automated Weekly Release Key) <releng@gentoo.org>"' &> /dev/null
+    (( $? == 0 )) || die "Failed to verify signature" "$?"
 
     for file in "${DIST_STAGE3_BZ2}" "${DIST_STAGE3_CONTENTS}"
     do
@@ -428,6 +430,8 @@ prepCatalyst () {
       (( $? == 0 )) || die "Whirlpool checksum failed for: ${file}" "$?"
     done
   fi
+  (( CLEAR_CCACHE == 1 )) && rm -rf ${CATALYST_BUILD_TMP}/${SRC_PATH}/var/ccache/*
+  (( $? == 0 )) || log '2' "Failed to clear ccache"
 
   [[ ${BUILD_TARGET} == "livecd" ]] && [[ ! -f ${CATALYST_BUILD_CACHE}/${BUILD_NAME}/livecd-${DIST_STAGE3_BZ2} ]] && cp ${CATALYST_SNAPSHOT_CACHE}/${DIST_STAGE3_BZ2} ${CATALYST_BUILD_CACHE}/${BUILD_NAME}/livecd-${DIST_STAGE3_BZ2}
 

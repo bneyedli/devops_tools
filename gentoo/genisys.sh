@@ -238,11 +238,11 @@ sigCheck () {
 }
 
 runCatalyst () {
-  local SCRIPT_SCOPE='1'
-  local SCRIPT_OUT="${CATALYST_LOG_DIR}/catalyst-snapshot-${RUN_ID}.info"
-  local SCRIPT_ERR="${CATALYST_LOG_DIR}/catalyst-snapshot-${RUN_ID}.err"
-  local SCRIPT_FLAGS="-a ${SCRIPT_OUT} -e -q -c"
   local method="$1"
+  local SCRIPT_SCOPE='1'
+  local SCRIPT_OUT="${CATALYST_LOG_DIR}/catalyst-${method}-${RUN_ID}.info"
+  local SCRIPT_ERR="${CATALYST_LOG_DIR}/catalyst-${method}-${RUN_ID}.err"
+  local SCRIPT_FLAGS="-a ${SCRIPT_OUT} -e -q -c"
 
   case ${method} in
     snapshot)

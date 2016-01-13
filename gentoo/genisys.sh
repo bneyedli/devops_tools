@@ -232,7 +232,7 @@ sumCheck () {
 sigCheck () {
   local SCRIPT_SCOPE='2'
   log '1' "Verifying GPG Signature for: $1"
-  ${GPG} --verify ${1} | grep "$2" 2>&1
+  ${GPG} --verify ${1} 2>&1 | grep "$2" &> /dev/null
   retVal=$?
   (( retVal == 0 )) || return "${retVal}"
 }
@@ -457,6 +457,7 @@ burnAmi () {
 
 burnIso () {
   #Something should be here
+  #mkisofs -J -R -l  -V "deusOS livecd" -o /var/data/catalyst/builds/deusOS/deusOS-amd64-hardened-installer- -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table /var/data/catalyst/builds/deusOS/livecd-stage2-amd64-hardened+nomultilib-20160107/
   echo "Burn"
 }
 

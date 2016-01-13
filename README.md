@@ -2,10 +2,5 @@
 Tooling For The DevOps
 gentoo/ | gentoo stuff
 
-
-```html 
-<font color="green"> Some green text </font>
-
-```css 
-
-<span style="color: green"> Some green text </span>
+genesis:
+![alt tag](https://raw.github.com/ccon-io/devops_tools/tree/master/gentoo/genisys.png)

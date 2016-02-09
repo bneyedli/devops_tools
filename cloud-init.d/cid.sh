@@ -1,15 +1,27 @@
 #!/bin/bash
 
 declare -i GZIP=0
+declare -i BASE64=0
 declare -i FORCE=0
 declare -i VERBOSITY=0
 
-OUTFILE=user-data
-PATH=cloud-init.d
+OUTFILE_PREFIX=user-data
+OUTFILE_SUFFIX=mime
+
+WRITE_ARGS=""
+PARSE_DIR=/etc/cloud-init.d
 
 die () {
-	echo $2
-	exit 1
+	[[ -n $2 ]] && echo $2
+	exit $1
+}
+
+printHelp () {
+  echo "Script to parse files prefixed numerically (00-,01-...) in a directory (preset to /etc/cloud-init.d/) and combine as a mime-multipart file, optionally base64 encoding and/or gziping."
+  echo
+  echo "Example Use (base64 encode gzip and force overwrite with verbose output):"
+  echo -e "\tcid -d /etc/cloud-init.d -o user-data -b -z -f -v"
+  die 0 ""
 }
 
 checkFile () {
@@ -34,8 +46,9 @@ headerCheck () {
 }
 
 processPath() {
-	cd ${PATH}
-	for file in *
+	FILES_FOUND=$(find ${PARSE_DIR} -mindepth 1 -maxdepth 1 -type f -exec basename {} \;|sort -u)
+
+	for file in ${FILES_FOUND}
 	do
 		STEP=${file/-*/}
 		if [[ ${STEPS[@]} =~ ${STEP} ]]
@@ -45,20 +58,28 @@ processPath() {
 			STEPS+=" ${STEP}"
 		fi
 		
-		headerCheck $file || continue
-		INCLUDES+=" $file"
-		
+		headerCheck "${PARSE_DIR}/$file" || continue
+		INCLUDES+=" ${PARSE_DIR}/$file"
 	done
 }
 
-while getopts "o:fvz" opt
+while getopts "d:o:bfhvz" opt
 do
 	case ${opt} in
+		b)
+			BASE64=1
+		;;
+		d)
+			PARSE_DIR=${OPTARG}
+		;;
 		f)
 			FORCE=1
 		;;
+		h)
+			printHelp
+		;;
 		o)
-			OUTFILE=${OPTARG}
+			OUTFILE_PREFIX=${OPTARG}
 		;;
 		z)
 			GZIP=1
@@ -70,21 +91,31 @@ do
 	esac
 done
 
+
 processPath
+
+OUTFILE="${OUTFILE_PREFIX}.${OUTFILE_SUFFIX}"
+
+[[ -w $(dirname ${OUTFILE}) ]] || die 1 "Can't write! sudo?"
+
+[[ -z ${INCLUDES} ]] && die 1 "Nothing to include, check your headers"
+
+if (( FORCE == 0 ))
+then
+  checkFile ${OUTFILE} && die 1 "File exists, -f, if you mean it"
+fi
+
+/usr/local/bin/write-mime-multipart ${WRITE_ARGS} -o ${OUTFILE} ${INCLUDES}
+
+if (( BASE64 == 1 ))
+then
+ /usr/bin/base64 ${OUTFILE} > ${OUTFILE}.b64
+ OUTFILE="${OUTFILE}.b64"
+fi
 
 if (( GZIP == 1 ))
 then
-	if (( FORCE == 0 ))
-	then
-		checkFile ${OUTFILE}.mime.gz && die 1 "File exists, -f, if you mean it"
-	fi
-	/usr/bin/write-mime-multipart -z -o ${OUTFILE}.mime.gz ${INCLUDES}
-else
-	if (( FORCE == 0 ))
-	then
-		checkFile ${OUTFILE}.mime && die 1 "File exists, -f, if you mean it"
-	fi
-	/usr/bin/write-mime-multipart -o ${OUTFILE}.mime ${INCLUDES}
+ /bin/gzip ${OUTFILE} 
 fi
 
 #'#include': 'text/x-include-url',

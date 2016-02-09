@@ -24,6 +24,12 @@ printHelp () {
   die 0 ""
 }
 
+depCheck () {
+  which write-mime-multipart &> /dev/null
+  (( $? == 0 )) || die 1 "write-mime-multipart not in path, make sure cloud utils are installed"
+  [[ -d ${PARSE_DIR} ]] || die 1 "Parse dir: ${PARSE_DIR} does not exist, create or specify new folder with -d"
+}
+
 checkFile () {
 	(( VERBOSITY > 0 )) && echo "Checking file: $1"
 	[[ -f $1 ]] && return 0
@@ -91,7 +97,7 @@ do
 	esac
 done
 
-
+depCheck
 processPath
 
 OUTFILE="${OUTFILE_PREFIX}.${OUTFILE_SUFFIX}"

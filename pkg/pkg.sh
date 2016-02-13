@@ -10,11 +10,13 @@ declare -i PACMAN_HANDLER=0
 declare -A PKG_HANDLER=( [Deb]='apt-get' [RH]='yum' [Arch]='pacman' [Gen]='emerge' )
 declare -A PKG_SEARCH=( [Deb]='apt-cache search' [RH]='yum search' [Arch]='pacman -Ss' [Gen]='emerge --search' )
 declare -A PKG_INSTALL=( [Deb]='apt-get -y install' [RH]='yum -y install' [Arch]='pacman -Ss' [Gen]='emerge --search' )
+declare -A PKG_LIST=( [Deb]='dpkg -l' [RH]='rpm -qa' [Arch]='pacman -Q' [Gen]='cat /var/lib/portage/world' )
 declare -A PKG_REMOVE=( [Deb]='apt-get remove' [RH]='yum remove' [Arch]='pacman -R' [Gen]='emerge --unmerge' )
 declare -A PKG_UPDATE=( [Deb]='apt-get -y update' [RH]='yum update' [Arch]='pacman -S' [Gen]='emerge --sync' )
-declare -A PKG_UPGRADE=( [Deb]='apt-get -y upgrade' [RH]='yum update' [Arch]='pacman -Syu' [Gen]='emerge -NDu @world' )
+declare -A PKG_UPGRADE=( [Deb]='apt-get -y upgrade' [RH]='yum upgrade' [Arch]='pacman -Syu' [Gen]='emerge -NDu @world' )
 
 declare DIST=''
+declare PACKAGE=''
 
 timeElapsed () {
     END_TIME=$(date +%s)
@@ -64,57 +66,46 @@ main () {
   do
     distroDetect $i && break
   done
+
+  declare -A PKG_ACTION=( [install]="${PKG_INSTALL[${DIST}]}" [list]="${PKG_LIST[${DIST}]}" [remove]="${PKG_REMOVE[${DIST}]}" [search]="${PKG_SEARCH[${DIST}]}" [update]="${PKG_UPDATE[${DIST}]}" [upgrade]="${PKG_UPGRADE[${DIST}]}" )
+  (( VERBOSITY > 0 )) && START_TIME=$(date +%s)
+
+  if [[ -z ${PACKAGE} ]]
+  then
+    ${PKG_ACTION[${ACTION}]} 
+  else
+    ${PKG_ACTION[${ACTION}]} ${PACKAGE}
+  fi
+
+  (( VERBOSITY == 0 )) && return
+  timeElapsed START_TIME
+  echo "Completed in: ${ELAPSED_TIME}"
 }
 
-while getopts "i:r:s:uUv" opt
+while getopts "i:lr:s:uUv" opt
 do
   case ${opt} in
     i)
-      INSTALL=1
+      ACTION='install'
       PACKAGE=${OPTARG}
-      main
-      ${PKG_INSTALL[${DIST}]} ${PACKAGE}
-      (( VERBOSITY == 0 )) && exit 
-      timeElapsed START_TIME
-      echo "Completed in: ${ELAPSED_TIME}"
        
     ;;
+    l)
+      ACTION='list'
+    ;;
     r)
-      REMOVE=1
+      ACTION='remove'
       PACKAGE=${OPTARG}
-      main
-      ${PKG_REMOVE[${DIST}]} ${PACKAGE}
-      (( VERBOSITY == 0 )) && exit 
-      timeElapsed START_TIME
-      echo "Completed in: ${ELAPSED_TIME}"
     ;;
     s)
-      SEARCH=1
+      ACTION='search'
       PACKAGE=${OPTARG}
-      START_TIME=$(date +%s)
-      main
-      ${PKG_SEARCH[${DIST}]} ${PACKAGE}
-      (( VERBOSITY == 0 )) && exit 
-      timeElapsed START_TIME
-      echo "Completed in: ${ELAPSED_TIME}"
     ;;
     u)
-      UPDATE=1
-      START_TIME=$(date +%s)
-      main
-      ${PKG_UPDATE[${DIST}]}
-      (( VERBOSITY == 0 )) && exit 
-      timeElapsed START_TIME
-      echo "Completed in: ${ELAPSED_TIME}"
+      ACTION='update'
     ;;
-    u)
-      UPGRADE=1
-      START_TIME=$(date +%s)
-      main
-      ${PKG_UPDGRADE[${DIST}]}
-      (( VERBOSITY == 0 )) && exit 
-      timeElapsed START_TIME
-      echo "Completed in: ${ELAPSED_TIME}"
+    U)
+      ACTION='upgrade'
     ;;
     v)
       (( ++VERBOSITY ))
@@ -123,3 +114,4 @@ do
 done
 
 main
+exit

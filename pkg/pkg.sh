@@ -1,5 +1,6 @@
 #!/bin/bash
 
+declare -i VERBOSITY=0
 declare -i RPM_HANDLER=0
 declare -i YUM_HANDLER=0
 declare -i APT_HANDLER=0
@@ -10,7 +11,8 @@ declare -A PKG_HANDLER=( [Deb]='apt-get' [RH]='yum' [Arch]='pacman' [Gen]='emerg
 declare -A PKG_SEARCH=( [Deb]='apt-cache search' [RH]='yum search' [Arch]='pacman -Ss' [Gen]='emerge --search' )
 declare -A PKG_INSTALL=( [Deb]='apt-get -y install' [RH]='yum -y install' [Arch]='pacman -Ss' [Gen]='emerge --search' )
 declare -A PKG_REMOVE=( [Deb]='apt-get remove' [RH]='yum remove' [Arch]='pacman -R' [Gen]='emerge --unmerge' )
-declare -A PKG_UPDATE=( [Deb]='apt-get -y update' [RH]='yum update' [Arch]='pacman -Syu' [Gen]='emerge -NDu @world' )
+declare -A PKG_UPDATE=( [Deb]='apt-get -y update' [RH]='yum update' [Arch]='pacman -S' [Gen]='emerge --sync' )
+declare -A PKG_UPGRADE=( [Deb]='apt-get -y upgrade' [RH]='yum update' [Arch]='pacman -Syu' [Gen]='emerge -NDu @world' )
 
 declare DIST=''
 
@@ -64,7 +66,7 @@ main () {
   done
 }
 
-while getopts "i:r:s:uv" opt
+while getopts "i:r:s:uUv" opt
 do
   case ${opt} in
     i)
@@ -72,6 +74,9 @@ do
       PACKAGE=${OPTARG}
       main
       ${PKG_INSTALL[${DIST}]} ${PACKAGE}
+      (( VERBOSITY == 0 )) && exit 
+      timeElapsed START_TIME
+      echo "Completed in: ${ELAPSED_TIME}"
        
     ;;
     r)
@@ -79,6 +84,9 @@ do
       PACKAGE=${OPTARG}
       main
       ${PKG_REMOVE[${DIST}]} ${PACKAGE}
+      (( VERBOSITY == 0 )) && exit 
+      timeElapsed START_TIME
+      echo "Completed in: ${ELAPSED_TIME}"
     ;;
     s)
       SEARCH=1
@@ -86,6 +94,7 @@ do
       START_TIME=$(date +%s)
       main
       ${PKG_SEARCH[${DIST}]} ${PACKAGE}
+      (( VERBOSITY == 0 )) && exit 
       timeElapsed START_TIME
       echo "Completed in: ${ELAPSED_TIME}"
     ;;
@@ -94,9 +103,21 @@ do
       START_TIME=$(date +%s)
       main
       ${PKG_UPDATE[${DIST}]}
+      (( VERBOSITY == 0 )) && exit 
+      timeElapsed START_TIME
+      echo "Completed in: ${ELAPSED_TIME}"
+    ;;
+    u)
+      UPGRADE=1
+      START_TIME=$(date +%s)
+      main
+      ${PKG_UPDGRADE[${DIST}]}
+      (( VERBOSITY == 0 )) && exit 
+      timeElapsed START_TIME
+      echo "Completed in: ${ELAPSED_TIME}"
     ;;
     v)
-      ++VERBOSITY
+      (( ++VERBOSITY ))
     ;;
   esac
 done

@@ -23,7 +23,7 @@ main () {
       done
     ;;
     search)
-      aws ec2 describe-images --query Images[].[Name,Architecture,ImageLocation,Description] --owners ${ACCOUNT} --output text
+      aws ec2 describe-images --query Images[].[Name,Architecture,ImageLocation,Description] --owners ${IMAGE_SOURCE[${ACCOUNT}]} --output text
     ;;
   esac
 }

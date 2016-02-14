@@ -19,11 +19,11 @@ main () {
     owners)
       for owner in "${!IMAGE_SOURCE[@]}"
       do
-        echo "Account  : $i"
+        echo "$owner"
       done
     ;;
     search)
-      aws ec2 describe-images --query Images[].[Name,Architecture,ImageLocation,Description] --owners ${ACCOUNT}
+      aws ec2 describe-images --query Images[].[Name,Architecture,ImageLocation,Description] --owners ${ACCOUNT} --output text
     ;;
   esac
 }

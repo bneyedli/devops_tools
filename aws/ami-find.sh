@@ -1,8 +1,7 @@
 #!/bin/bash
 
 declare -i VERBOSITY=0
-
-delcare -A IMAGE_SOURCE=( [amazon]='amazon' [marketplace]='aws-marketplace' [ubuntu]='099720109477' [centos]='679593333241' )
+declare -A IMAGE_SOURCE=( [amazon]='amazon' [marketplace]='aws-marketplace' [ubuntu]='099720109477' [centos]='679593333241' )
 
 timeElapsed () {
     END_TIME=$(date +%s)

@@ -9,7 +9,7 @@ declare -i PACMAN_HANDLER=0
 
 declare -A PKG_HANDLER=( [Deb]='apt-get' [RH]='yum' [Arch]='pacman' [Gen]='emerge' )
 declare -A PKG_SEARCH=( [Deb]='apt-cache search' [RH]='yum search' [Arch]='pacman -Ss' [Gen]='emerge --search' )
-declare -A PKG_INSTALL=( [Deb]='apt-get -y install' [RH]='yum -y install' [Arch]='pacman -Ss' [Gen]='emerge --search' )
+declare -A PKG_INSTALL=( [Deb]='apt-get -y install' [RH]='yum -y install' [Arch]='pacman -S' [Gen]='emerge --search' )
 declare -A PKG_LIST=( [Deb]='dpkg -l' [RH]='rpm -qa' [Arch]='pacman -Q' [Gen]='cat /var/lib/portage/world' )
 declare -A PKG_REMOVE=( [Deb]='apt-get remove' [RH]='yum remove' [Arch]='pacman -R' [Gen]='emerge --unmerge' )
 declare -A PKG_UPDATE=( [Deb]='apt-get -y update' [RH]='yum update' [Arch]='pacman -S' [Gen]='emerge --sync' )
